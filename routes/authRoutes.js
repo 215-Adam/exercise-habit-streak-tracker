@@ -2,9 +2,11 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { User } = require("../database/setup");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
+// REGISTER
 router.post("/register", async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
@@ -36,6 +38,7 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
+// LOGIN
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -59,10 +62,31 @@ router.post("/login", async (req, res, next) => {
       { expiresIn: "7d" }
     );
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (err) {
     next(err);
   }
+});
+
+
+router.post("/logout", (req, res) => {
+  res.json({ message: "Logged out successfully (client should discard token)" });
+});
+
+// TOKEN VALIDATION
+router.get("/validate", requireAuth, (req, res) => {
+  res.json({
+    valid: true,
+    user: req.user
+  });
 });
 
 module.exports = router;

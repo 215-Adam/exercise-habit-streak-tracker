@@ -6,10 +6,22 @@ const router = express.Router();
 
 router.get("/me", requireAuth, async (req, res, next) => {
   try {
-    const streaks = await Streak.findAll({
-      where: { userId: req.user.id }
+    const page = Math.max(1, Number(req.query.page || 1));
+    const limit = Math.min(20, Math.max(1, Number(req.query.limit || 10)));
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await Streak.findAndCountAll({
+      where: { userId: req.user.id },
+      limit,
+      offset
     });
-    res.json(streaks);
+
+    res.json({
+      page,
+      limit,
+      total: count,
+      data: rows
+    });
   } catch (err) {
     next(err);
   }

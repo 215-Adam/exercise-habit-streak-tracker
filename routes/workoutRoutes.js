@@ -126,5 +126,15 @@ router.delete("/:id", requireAuth, async (req, res, next) => {
     next(err);
   }
 });
+const { requireRole } = require("../middleware/auth");
+
+router.get("/", requireAuth, requireRole("admin"), async (req, res, next) => {
+  try {
+    const workouts = await Workout.findAll();
+    res.json(workouts);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

@@ -1,263 +1,140 @@
-# Exercise Habit Streak Tracker API  
-A backend REST API built with Node.js, Express, SQLite, and Sequelize that helps users track their workout habits, log exercises, and maintain streaks to stay motivated. Users can register, log in, record workouts, view their exercise history, and track streaks over time.
+Exercise Habit Streak Tracker API
 
----
+This project is a backend REST API built with Node.js, Express, Sequelize, and a relational database. The goal of the API is to help users stay consistent with working out by letting them log workouts, track exercises, and see streaks based on how often they train. Users can create an account, log in, record workouts, and view their progress over time.
 
-## Project Overview
-Many people start working out but struggle to stay consistent or track progress. This API solves that problem by letting users:
+The API is fully authenticated using JSON Web Tokens, includes role based authorization, and is deployed to Render so it can be accessed publicly.
 
-- Log workouts for different exercises  
-- Track how many days in a row they've performed an exercise  
-- View their current and longest streaks  
-- Stay motivated through habit tracking  
+Project Overview
 
-This API supports authentication (JWT), multiple resource types, CRUD operations, and proper relational database design.
+A lot of people start working out but fall off because they do not track their progress or stay consistent. This API solves that problem by letting users log their workouts and automatically calculate streaks for each exercise. The streak system helps users see how many days in a row they have stayed consistent and what their longest streak has been.
 
----
+The project was built to demonstrate real backend concepts like authentication, authorization, relational databases, CRUD operations, testing, and production deployment.
 
-## Technologies Used
-- Node.js  
-- Express.js  
-- Sequelize ORM  
-- SQLite3 database  
-- JWT Authentication  
-- Jest + Supertest (unit tests)  
+Technologies Used
 
----
+This project was built using Node.js and Express for the server and routing. Sequelize is used as the ORM to interact with the database. SQLite is used for local development and PostgreSQL is used in production. Authentication is handled using JSON Web Tokens and passwords are securely hashed using bcrypt. Unit testing is done using Jest and Supertest. The application is deployed on Render.
 
-## Project Structure
-project/
-├── server.js
-├── package.json
-├── .env
-├── database/
-│ ├── setup.js
-│ └── seed.js
-├── models/
-│ ├── User.js
-│ ├── Exercise.js
-│ └── Workout.js
-│ └── Streak.js
-├── routes/
-│ ├── authRoutes.js
-│ ├── exerciseRoutes.js
-│ ├── workoutRoutes.js
-│ └── streakRoutes.js
-├── middleware/
-│ ├── auth.js
-│ ├── logger.js
-│ └── errorHandler.js
-└── tests/
-2. Install dependencies
-npm install
+Project Structure
 
-3. Configure Environment Variables
+The server entry point is server.js. Database configuration and setup live in the database folder. All models such as User, Exercise, Workout, and Streak are stored in the models folder. API routes are separated into route files for authentication, workouts, exercises, and streaks. Middleware such as authentication, logging, and error handling live in the middleware folder. All tests are stored in the tests folder.
 
-Create a .env file in the project root:
+Setup Instructions for Local Development
 
-JWT_SECRET=your_secret_key_here
-DB_FILE=database.sqlite
+First clone the repository from GitHub and navigate into the project folder. Then install all dependencies using npm install.
 
-4. Set up the database
-npm run db:setup
-npm run db:seed
+Next create a .env file in the root of the project and add a JWT_SECRET value. This secret is used to sign and verify authentication tokens.
 
-5. Run the server
-npm run dev
+After that, set up the database by running npm run db setup and npm run db seed. This will create the tables and insert sample data.
 
+Finally start the server using npm run dev. The server will run on http://localhost:3000
+.
 
-Server runs on:
+Authentication Guide
 
-http://localhost:3000
+This API uses JSON Web Tokens for authentication. Users must register and then log in to receive a token. That token must be included in the Authorization header for all protected endpoints.
 
-Authentication
+The header should look like this
+Authorization Bearer YOUR_TOKEN_HERE
 
-This API uses JWT (JSON Web Tokens).
-
-Add this header to all protected routes:
-
-Authorization: Bearer YOUR_TOKEN_HERE
-
-Postman API Documentation – Exercise Habit Streak Tracker API
-
-This collection allows users to register, log in, create workouts, view streaks, and manage exercises.
-All protected routes require a JWT token in the header:
-
-Authorization: Bearer YOUR_TOKEN_HERE
-
- 1. AUTHENTICATION
-Register User
+Register
 
 POST /auth/register
 
-Body
+This endpoint creates a new user account.
+
+Request body example
+
 {
-  "username": "adamtest",
-  "email": "adam@example.com",
+  "username": "testuser",
+  "email": "test@example.com",
   "password": "password123"
 }
 
-Response
-{
-  "id": 1,
-  "username": "adamtest",
-  "email": "adam@example.com",
-  "role": "user"
-}
 
-Login User
+The response returns the newly created user information without the password.
+
+Login
 
 POST /auth/login
 
-Body
+This endpoint authenticates a user and returns a JWT token.
+
+Request body example
+
 {
-  "email": "adam@example.com",
+  "email": "test@example.com",
   "password": "password123"
 }
 
-Response
+
+Response example
+
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR..."
-}
-
- 2. WORKOUTS CRUD
-
-Use token for all workout routes.
-
-Create Workout
-
-POST /workouts
-
-Headers
-Authorization: Bearer YOUR_TOKEN
-
-Body
-{
-  "exerciseId": 1,
-  "date": "2025-01-01",
-  "duration": 45,
-  "notes": "Chest day"
-}
-
-Response
-{
-  "id": 1,
-  "userId": 1,
-  "exerciseId": 1,
-  "date": "2025-01-01",
-  "duration": 45,
-  "notes": "Chest day"
-}
-
-Get Logged-in User’s Workouts
-
-GET /workouts/me
-
-Response
-[
-  {
+  "token": "JWT_TOKEN_HERE",
+  "user": {
     "id": 1,
-    "exerciseId": 1,
-    "date": "2025-01-01",
-    "duration": 45,
-    "notes": "Chest day"
-  }
-]
-
-Update Workout
-
-PUT /workouts/:id
-
-Body
-{
-  "duration": 60,
-  "notes": "Updated workout details"
-}
-
-Response
-{
-  "message": "Workout updated",
-  "updatedWorkout": {
-    "id": 1,
-    "duration": 60,
-    "notes": "Updated workout details"
+    "username": "testuser",
+    "email": "test@example.com",
+    "role": "user"
   }
 }
 
-Delete Workout
 
-DELETE /workouts/:id
+The token returned here is required for all protected routes.
 
-Response
-{
-  "message": "Workout deleted"
-}
+User Roles and Permissions
 
-🏷 3. EXERCISES CRUD
-Get All Exercises
+This API uses role based access control with two roles, user and admin.
 
-GET /exercises
+A regular user can create, view, update, and delete their own workouts. Users can also view their own streaks and exercise history. Users are not allowed to access admin only endpoints.
 
-Response
-[
-  {
-    "id": 1,
-    "name": "Bench Press",
-    "type": "strength"
-  }
-]
+An admin user can access endpoints that return data across all users. Admin only endpoints are protected and return a forbidden response when accessed by non admin users.
 
-Create Exercise
+API Endpoints
+Workouts
 
-POST /exercises
+Users can create workouts, view their own workouts, update them, and delete them. All workout routes require authentication and users can only access workouts that belong to them.
 
-Body
-{
-  "name": "Running",
-  "type": "cardio"
-}
+POST /workouts creates a workout
+GET /workouts/me returns workouts for the logged in user
+GET /workouts/:id returns a single workout owned by the user
+PUT /workouts/:id updates a workout
+DELETE /workouts/:id deletes a workout
 
-Response
-{
-  "id": 2,
-  "name": "Running",
-  "type": "cardio"
-}
+Exercises
 
-Update Exercise
+Exercises allow users to organize workouts by type.
 
-PUT /exercises/:id
+POST /exercises creates an exercise
+GET /exercises returns exercises
+PUT /exercises/:id updates an exercise
+DELETE /exercises/:id deletes an exercise
 
-Body
-{
-  "name": "Treadmill Running",
-  "type": "cardio"
-}
+All exercise routes require authentication.
 
-Response
-{
-  "message": "Exercise updated"
-}
+Streaks
 
-Delete Exercise
+Streaks track how consistent a user is with each exercise.
 
-DELETE /exercises/:id
+GET /streaks/me returns all streaks for the logged in user
+GET /streaks/me/:exerciseId returns a streak for a specific exercise
+GET /streaks/user/:userId returns streaks for any user and is restricted to admins only
 
-Response
-{
-  "message": "Exercise deleted"
-}
+Error Handling
 
- 4. STREAKS
-Get Logged-in User Streaks
+The API uses proper HTTP status codes and clear error messages. A 401 response is returned when a request is missing a token or has an invalid token. A 403 response is returned when a user tries to access an endpoint they do not have permission for. A 404 response is returned when a resource is not found. A 500 response is returned for server errors.
 
-GET /streaks/me
+Running Tests
 
-Response
-[
-  {
-    "exerciseId": 1,
-    "currentStreak": 3,
-    "longestStreak": 5,
-    "lastWorkoutDate": "2025-01-01"
-  }
+Tests can be run using npm test. The test suite covers authentication, protected routes, role based authorization, and error scenarios.
+
+API Documentation
+
+The API is fully documented using Postman. The documentation includes example requests and responses for all CRUD endpoints, authentication examples, and permission behavior.
+
+Postman documentation link
+PASTE YOUR POSTMAN LINK HERE
+
+Deployment
+
+The API is deployed on Render and publicly accessible. All authentication, authorization, CRUD operations, and relationships were tested in the deployed environment using Postman.
